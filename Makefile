@@ -4,6 +4,8 @@ BUILDTYPE ?= Release
 BUILD_DIR ?= ./build
 PYTHON ?= python
 GYP ?= ./tools/gyp/gyp
+DEP_RUBY_VERSION ?= 2.0.0
+SHELL = /usr/bin/env bash -l
 
 # Default to verbose builds
 export V ?= 1
@@ -11,6 +13,13 @@ export V ?= 1
 # Targets
 .PHONY: all
 all: libsnowcrash test-libsnowcrash snowcrash
+
+.PHONY: deps
+deps:
+	git submodule update --init --recursive
+	rvm use $(DEP_RUBY_VERSION) --fuzzy || rvm install $(DEP_RUBY_VERSION) --autolibs=read-only --latest-binary
+	gem update --system
+	gem --version
 
 .PHONY: libsnowcrash
 libsnowcrash: config.gypi $(BUILD_DIR)/Makefile
