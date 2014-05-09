@@ -6,7 +6,7 @@ PYTHON ?= python
 GYP ?= ./tools/gyp/gyp
 
 # Default to verbose builds
-V ?= 1
+export V ?= 1
 
 # Targets
 .PHONY: all
@@ -14,23 +14,23 @@ all: libsnowcrash test-libsnowcrash snowcrash
 
 .PHONY: libsnowcrash
 libsnowcrash: config.gypi $(BUILD_DIR)/Makefile
-	$(MAKE) -C $(BUILD_DIR) V=$(V) libsnowcrash
+	$(MAKE) -C $(BUILD_DIR) libsnowcrash
 
 .PHONY: test-libsnowcrash
 test-libsnowcrash: config.gypi $(BUILD_DIR)/Makefile
-	$(MAKE) -C $(BUILD_DIR) V=$(V) test-libsnowcrash
+	$(MAKE) -C $(BUILD_DIR) test-libsnowcrash
 	mkdir -p ./bin
 	cp -f $(BUILD_DIR)/out/$(BUILDTYPE)/test-libsnowcrash ./bin/test-libsnowcrash
 
 .PHONY: perf-libsnowcrash
 perf-libsnowcrash: config.gypi $(BUILD_DIR)/Makefile
-	$(MAKE) -C $(BUILD_DIR) V=$(V) perf-libsnowcrash
+	$(MAKE) -C $(BUILD_DIR) perf-libsnowcrash
 	mkdir -p ./bin
 	cp -f $(BUILD_DIR)/out/$(BUILDTYPE)/perf-libsnowcrash ./bin/perf-libsnowcrash
 
 .PHONY: snowcrash
 snowcrash: config.gypi $(BUILD_DIR)/Makefile
-	$(MAKE) -C $(BUILD_DIR) V=$(V) snowcrash
+	$(MAKE) -C $(BUILD_DIR) snowcrash
 	mkdir -p ./bin
 	cp -f $(BUILD_DIR)/out/$(BUILDTYPE)/snowcrash ./bin/snowcrash
 
