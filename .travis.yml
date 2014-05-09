@@ -2,7 +2,7 @@ language: cpp
 compiler:
   - gcc
   - clang
-script: 
+script:
   - ./configure --include-integration-tests
   - make test
 before_install:
@@ -13,7 +13,7 @@ before_install:
 notifications:
   email:
     recipients:
-      - z@apiary.io  
+      - z@apiary.io
     on_success: change
     on_failure: always
   hipchat:

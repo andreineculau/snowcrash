@@ -50,7 +50,7 @@ distclean:
 	rm -rf ./build
 	rm -f ./config.mk
 	rm -f ./config.gypi
-	rm -rf ./bin	
+	rm -rf ./bin
 
 .PHONY: test
 test: test-libsnowcrash snowcrash
@@ -58,7 +58,7 @@ test: test-libsnowcrash snowcrash
 
 ifdef INTEGRATION_TESTS
 	bundle exec cucumber
-endif	
+endif
 
 .PHONY: perf
 perf: perf-libsnowcrash
