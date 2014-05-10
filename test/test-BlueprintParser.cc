@@ -606,3 +606,99 @@ TEST_CASE("Fail to parse paragraph without final newline", "[blueprint][issue][#
     REQUIRE(blueprint.resourceGroups.empty());
 }
 
+TEST_CASE("Non-lazy reference definition", "[blueprint][issue][84]")
+{
+    // Blueprint in question:
+    //R"(
+    //# Resource 1 [/1]
+    //+ Model (text/plain)
+    //
+    //    Hello World
+    //
+    //# Resource 2 [/2]
+    //## Retrieve [GET]
+    //+ Response 200
+    //
+    //    [Resource 1][]
+    //");
+
+    MarkdownBlock::Stack markdown;
+    markdown.push_back(MarkdownBlock(HeaderBlockType, "API Name", 1, MakeSourceDataBlock(0, 1)));
+
+    markdown.push_back(MarkdownBlock(HeaderBlockType, "Resource 1 [/1]", 1, MakeSourceDataBlock(1, 1)));
+
+    markdown.push_back(MarkdownBlock(ListBlockBeginType, SourceData(), 0, SourceDataBlock()));
+    markdown.push_back(MarkdownBlock(ListItemBlockBeginType, SourceData(), 0, SourceDataBlock()));
+    markdown.push_back(MarkdownBlock(ParagraphBlockType, "Model (text/plain)", 0, MakeSourceDataBlock(2, 1)));
+    markdown.push_back(MarkdownBlock(CodeBlockType, "Hello World\n", 0, MakeSourceDataBlock(3, 1)));
+    markdown.push_back(MarkdownBlock(ListItemBlockEndType, SourceData(), 0, MakeSourceDataBlock(4, 1)));
+    markdown.push_back(MarkdownBlock(ListBlockEndType, SourceData(), 0, MakeSourceDataBlock(5, 1)));
+
+    markdown.push_back(MarkdownBlock(HeaderBlockType, "Resource 2 [/2]", 1, MakeSourceDataBlock(6, 1)));
+    markdown.push_back(MarkdownBlock(HeaderBlockType, "Retrieve Resource 2 [GET]", 2, MakeSourceDataBlock(7, 1)));
+
+    markdown.push_back(MarkdownBlock(ListBlockBeginType, SourceData(), 0, SourceDataBlock()));
+    markdown.push_back(MarkdownBlock(ListItemBlockBeginType, SourceData(), 0, SourceDataBlock()));
+    markdown.push_back(MarkdownBlock(ParagraphBlockType, "Response 200", 0, MakeSourceDataBlock(8, 1)));
+    markdown.push_back(MarkdownBlock(ParagraphBlockType, "    [Resource 1][]\n", 0, MakeSourceDataBlock(9, 1)));
+    markdown.push_back(MarkdownBlock(ListItemBlockEndType, SourceData(), 0, MakeSourceDataBlock(10, 1)));
+    markdown.push_back(MarkdownBlock(ListBlockEndType, SourceData(), 0, MakeSourceDataBlock(11, 1)));
+
+    Result result;
+    Blueprint blueprint;
+    BlueprintParser::Parse(SourceDataFixture, markdown, RequireBlueprintNameOption, result, blueprint);
+
+    REQUIRE(result.error.code == Error::OK);
+    REQUIRE(result.warnings.empty());
+
+    REQUIRE(blueprint.resourceGroups[0].resources[1].actions[0].examples[0].responses[0].body == blueprint.resourceGroups[0].resources[0].model.body);
+}
+
+TEST_CASE("Lazy reference definition", "[blueprint][issue][84]")
+{
+    // Blueprint in question:
+    //R"(
+    //# Resource 2 [/2]
+    //## Retrieve [GET]
+    //+ Response 200
+    //
+    //    [Resource 1][]
+    //
+    //# Resource 1 [/1]
+    //+ Model (text/plain)
+    //
+    //    Hello World
+    //");
+
+    MarkdownBlock::Stack markdown;
+    markdown.push_back(MarkdownBlock(HeaderBlockType, "API Name", 1, MakeSourceDataBlock(0, 1)));
+
+    markdown.push_back(MarkdownBlock(HeaderBlockType, "Resource 2 [/2]", 1, MakeSourceDataBlock(1, 1)));
+    markdown.push_back(MarkdownBlock(HeaderBlockType, "Retrieve Resource 2 [GET]", 2, MakeSourceDataBlock(2, 1)));
+
+    markdown.push_back(MarkdownBlock(ListBlockBeginType, SourceData(), 0, SourceDataBlock()));
+    markdown.push_back(MarkdownBlock(ListItemBlockBeginType, SourceData(), 0, SourceDataBlock()));
+    markdown.push_back(MarkdownBlock(ParagraphBlockType, "Response 200", 0, MakeSourceDataBlock(3, 1)));
+    markdown.push_back(MarkdownBlock(ParagraphBlockType, "    [Resource 1][]\n", 0, MakeSourceDataBlock(4, 1)));
+    markdown.push_back(MarkdownBlock(ListItemBlockEndType, SourceData(), 0, MakeSourceDataBlock(5, 1)));
+    markdown.push_back(MarkdownBlock(ListBlockEndType, SourceData(), 0, MakeSourceDataBlock(6, 1)));
+
+    markdown.push_back(MarkdownBlock(HeaderBlockType, "Resource 1 [/1]", 1, MakeSourceDataBlock(7, 1)));
+
+    markdown.push_back(MarkdownBlock(ListBlockBeginType, SourceData(), 0, SourceDataBlock()));
+    markdown.push_back(MarkdownBlock(ListItemBlockBeginType, SourceData(), 0, SourceDataBlock()));
+    markdown.push_back(MarkdownBlock(ParagraphBlockType, "Model (text/plain)", 0, MakeSourceDataBlock(8, 1)));
+    markdown.push_back(MarkdownBlock(CodeBlockType, "Hello World\n", 0, MakeSourceDataBlock(9, 1)));
+    markdown.push_back(MarkdownBlock(ListItemBlockEndType, SourceData(), 0, MakeSourceDataBlock(10, 1)));
+    markdown.push_back(MarkdownBlock(ListBlockEndType, SourceData(), 0, MakeSourceDataBlock(11, 1)));
+
+    Result result;
+    Blueprint blueprint;
+    BlueprintParser::Parse(SourceDataFixture, markdown, RequireBlueprintNameOption, result, blueprint);
+
+    REQUIRE(result.error.code == Error::OK);
+    REQUIRE(result.warnings.empty());
+
+    REQUIRE(blueprint.resourceGroups[0].resources[0].actions[0].examples[0].responses[0].body == blueprint.resourceGroups[0].resources[1].model.body);
+}
+

@@ -388,18 +388,15 @@ namespace snowcrash {
                 // Process a symbol reference
                 ResourceModelSymbolTable::const_iterator symbolEntry = parser.symbolTable.resourceModels.find(symbol);
                 if (symbolEntry == parser.symbolTable.resourceModels.end()) {
-                    
-                    // ERR: Undefined symbol
-                    std::stringstream ss;
-                    ss << "undefined symbol '" << symbol << "'";
-                    result.first.error = Error(ss.str(),
-                                               SymbolError,
-                                               MapSourceDataBlock(symbolSourceMap, parser.sourceData));
-                    return result;
+                    ResourceModel resModel;
+                    resModel.name = symbol;
+                    resModel.lazyReferences.push_back(&payload);
+                    parser.symbolTable.resourceModels[payload.name] = resModel;
                 }
-                
-                // Retrieve payload from symbol table
-                payload = symbolEntry->second;
+                else {
+                    // Retrieve payload from symbol table
+                    payload = symbolEntry->second;
+                }
             }
             else {
                 // Parse as an asset

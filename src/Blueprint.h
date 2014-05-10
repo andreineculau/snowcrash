@@ -136,6 +136,9 @@ namespace snowcrash {
         
         /** Schema */
         Asset schema;
+
+        /** Lazy References */
+        Collection<Payload*>::type lazyReferences;
     };
     
     /** Resource Model */
