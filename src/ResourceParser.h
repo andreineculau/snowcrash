@@ -348,15 +348,28 @@ namespace snowcrash {
                 parser.symbolTable.resourceModels[payload.name] = payload;
             }
             else {
-                // ERR: Symbol already defined
-                std::stringstream ss;
-                ss << "symbol '" << payload.name << "' already defined";
+                if (parser.symbolTable.resourceModels[payload.name].lazyReferences.empty()) {
+                    // ERR: Symbol already defined
+                    std::stringstream ss;
+                    ss << "symbol '" << payload.name << "' already defined";
 
-                BlockIterator nameBlock = ListItemNameBlock(cur, section.bounds.second);
-                SourceCharactersBlock sourceBlock = CharacterMapForBlock(nameBlock, cur, section.bounds, parser.sourceData);
-                result.first.error = Error(ss.str(),
-                                           SymbolError,
-                                           sourceBlock);
+                    BlockIterator nameBlock = ListItemNameBlock(cur, section.bounds.second);
+                    SourceCharactersBlock sourceBlock = CharacterMapForBlock(nameBlock, cur, section.bounds, parser.sourceData);
+                    result.first.error = Error(ss.str(),
+                                               SymbolError,
+                                               sourceBlock);
+                } else {
+                    // Resolve lazyReferences
+                    std::stringstream ss;
+                    ss << "TODO symbol '" << payload.name << "' already defined";
+
+                    BlockIterator nameBlock = ListItemNameBlock(cur, section.bounds.second);
+                    SourceCharactersBlock sourceBlock = CharacterMapForBlock(nameBlock, cur, section.bounds, parser.sourceData);
+                    result.first.error = Error(ss.str(),
+                                               SymbolError,
+                                               sourceBlock);
+                    parser.symbolTable.resourceModels[payload.name].lazyReferences.clear();
+                }
             }
             
             // Assign model
